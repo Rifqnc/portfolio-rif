@@ -242,6 +242,9 @@ nav {
   font-size: 1.1rem;
   letter-spacing: 0.2em;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
 }
 .nav-links {
   display: flex;
@@ -564,7 +567,7 @@ footer {
   letter-spacing: 0.2em;
   color: rgba(201,168,76,0.4);
 }
-footer .crest { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.75rem; opacity: 0.6; }
+footer .crest { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.75rem; opacity: 0.6; display: flex; justify-content: center; align-items: center; }
 
 /* ─── UTILITY ─────────────────────────────────────────────────── */
 .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
