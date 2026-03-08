@@ -1,0 +1,334 @@
+<!-- Realistic book canvas animation -->
+<canvas id="book-canvas" aria-hidden="true"></canvas>
+
+<style>
+#book-canvas {
+  display: block;
+  margin: 0 auto 1.8rem;
+  width: clamp(240px, 28vw, 320px);
+  height: clamp(160px, 19vw, 220px);
+}
+</style>
+
+<script>
+(function () {
+  const canvas = document.getElementById('book-canvas') as HTMLCanvasElement;
+  const ctx    = canvas.getContext('2d')!;
+  const DPR    = window.devicePixelRatio || 1;
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    canvas.width  = r.width  * DPR;
+    canvas.height = r.height * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const W = () => canvas.getBoundingClientRect().width;
+  const H = () => canvas.getBoundingClientRect().height;
+
+  function themeColors() {
+    const t = document.documentElement.dataset.theme || 'a';
+    if (t === 'b') return { gold:'#f0d060', light:'#f8f0a0', cover:'#100828', page:'#1a1240' };
+    if (t === 'c') return { gold:'#e8a4b8', light:'#f0c8d8', cover:'#12082a', page:'#1a0c28' };
+    return              { gold:'#c9a84c', light:'#f0d890', cover:'#1a1008', page:'#261a08' };
+  }
+
+  // ── Easing ──────────────────────────────────────────────────
+  function ease(t:number) { return t<.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  // ── Draw one frame ───────────────────────────────────────────
+  /**
+   * angle: 0 = page flat on right side
+   *        π/2 = page standing up (arc peak)
+   *        π = page flat on left side
+   * flippedCount: how many pages are already on left side
+   */
+  function draw(angle: number, flippedCount: number, sparkT: number) {
+    const w = W(), h = H();
+    ctx.clearRect(0, 0, w, h);
+
+    const c = themeColors();
+
+    // ── Book geometry ──────────────────────────────────────────
+    const BW  = w * 0.80;   // total book width (open)
+    const BH  = h * 0.62;   // book height
+    const BX  = (w - BW) / 2;
+    const BY  = h * 0.17;
+    const SYW = BW * 0.035; // spine width
+    const SX  = BX + BW/2 - SYW/2;
+    const CVW = (BW - SYW) / 2; // one cover width
+    const DEPTH = h * 0.07;     // 3-D edge depth
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur  = 20;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle   = 'transparent';
+    ctx.fillRect(BX, BY, BW, BH);
+    ctx.restore();
+
+    // ── 3-D bottom edge (thickness) ───────────────────────────
+    // Left cover bottom edge
+    ctx.beginPath();
+    ctx.moveTo(BX,       BY + BH);
+    ctx.lineTo(BX,       BY + BH + DEPTH * 0.7);
+    ctx.lineTo(SX,       BY + BH + DEPTH * 0.7);
+    ctx.lineTo(SX,       BY + BH);
+    ctx.closePath();
+    ctx.fillStyle = c.gold + '44';
+    ctx.fill();
+
+    // Right cover bottom edge
+    ctx.beginPath();
+    ctx.moveTo(SX + SYW, BY + BH);
+    ctx.lineTo(SX + SYW, BY + BH + DEPTH * 0.7);
+    ctx.lineTo(BX + BW,  BY + BH + DEPTH * 0.7);
+    ctx.lineTo(BX + BW,  BY + BH);
+    ctx.closePath();
+    ctx.fillStyle = c.gold + '33';
+    ctx.fill();
+
+    // ── Left cover ─────────────────────────────────────────────
+    ctx.beginPath();
+    ctx.roundRect(BX, BY, CVW, BH, [4, 0, 0, 4]);
+    ctx.fillStyle = c.cover;
+    ctx.fill();
+    ctx.strokeStyle = c.gold;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Left cover inner border
+    ctx.beginPath();
+    ctx.roundRect(BX + 7, BY + 7, CVW - 14, BH - 14, 2);
+    ctx.strokeStyle = c.gold + '50';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Left cover corner ornaments
+    const co = 12;
+    [[BX+10,BY+10],[BX+10,BY+BH-10-co],[BX+CVW-10-co,BY+10],[BX+CVW-10-co,BY+BH-10-co]].forEach(([cx2,cy2], i) => {
+      ctx.strokeStyle = c.gold + 'bb';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      if (i===0) { ctx.moveTo(cx2,cy2+co); ctx.lineTo(cx2,cy2); ctx.lineTo(cx2+co,cy2); }
+      if (i===1) { ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2+co); ctx.lineTo(cx2+co,cy2+co); }
+      if (i===2) { ctx.moveTo(cx2,cy2+co); ctx.lineTo(cx2+co,cy2+co); ctx.lineTo(cx2+co,cy2); }  // actually fixed below
+      if (i===3) { ctx.moveTo(cx2,cy2); ctx.lineTo(cx2+co,cy2); ctx.lineTo(cx2+co,cy2+co); }
+      ctx.stroke();
+    });
+    // Redo corners properly
+    function corner(x:number,y:number,dx:number,dy:number) {
+      ctx.beginPath(); ctx.moveTo(x,y+dy*co); ctx.lineTo(x,y); ctx.lineTo(x+dx*co,y);
+      ctx.strokeStyle=c.gold+'cc'; ctx.lineWidth=1.3; ctx.stroke();
+    }
+    corner(BX+9,    BY+9,     1,  1);
+    corner(BX+9,    BY+BH-9, 1, -1);
+    corner(BX+CVW-9,BY+9,   -1,  1);
+    corner(BX+CVW-9,BY+BH-9,-1, -1);
+
+    // ⚜ seal on left cover
+    ctx.save();
+    ctx.shadowColor = c.gold; ctx.shadowBlur = 14;
+    ctx.fillStyle   = c.gold;
+    ctx.font        = `${BH * 0.30}px serif`;
+    ctx.textAlign   = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚜', BX + CVW * 0.5, BY + BH * 0.48);
+    ctx.restore();
+
+    // ── Right cover ────────────────────────────────────────────
+    ctx.beginPath();
+    ctx.roundRect(SX + SYW, BY, CVW, BH, [0, 4, 4, 0]);
+    ctx.fillStyle = c.cover;
+    ctx.fill();
+    ctx.strokeStyle = c.gold;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Inner border right
+    ctx.beginPath();
+    ctx.roundRect(SX + SYW + 7, BY + 7, CVW - 14, BH - 14, 2);
+    ctx.strokeStyle = c.gold + '50'; ctx.lineWidth = 0.8; ctx.stroke();
+
+    const RX = SX + SYW;
+    corner(RX+9,    BY+9,      1,  1);
+    corner(RX+9,    BY+BH-9,   1, -1);
+    corner(RX+CVW-9,BY+9,     -1,  1);
+    corner(RX+CVW-9,BY+BH-9, -1, -1);
+
+    // Lines on right cover
+    for (let i = 0; i < 3; i++) {
+      const ly = BY + BH * (0.36 + i * 0.13);
+      const g  = ctx.createLinearGradient(RX+15, ly, RX+CVW-15, ly);
+      g.addColorStop(0,'transparent'); g.addColorStop(.5, c.gold+(i===0?'99':'66')); g.addColorStop(1,'transparent');
+      ctx.strokeStyle=g; ctx.lineWidth=i===0?1:0.6; ctx.beginPath(); ctx.moveTo(RX+15,ly); ctx.lineTo(RX+CVW-15,ly); ctx.stroke();
+    }
+
+    // ── Page stack on left (accumulated flipped pages) ─────────
+    for (let p = 0; p < flippedCount; p++) {
+      const offset = p * 1.2;
+      const stackW = CVW * (0.85 - p * 0.03);
+      ctx.beginPath();
+      ctx.roundRect(SX - stackW + offset*0.3, BY + 1 + offset*0.3, stackW, BH - 2 - offset*0.6, [2,0,0,2]);
+      ctx.fillStyle = c.page;
+      ctx.strokeStyle = c.gold + '30';
+      ctx.lineWidth = 0.5;
+      ctx.fill(); ctx.stroke();
+    }
+
+    // ── Flipping page ──────────────────────────────────────────
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle); // 0→1→0 over the arc
+    const arcLift = sinA * BH * 0.22; // how much the page curves up at top
+
+    ctx.save();
+    ctx.beginPath();
+
+    if (angle < Math.PI) {
+      const PW = CVW * 0.88 * Math.abs(cosA);
+      const leftSide = cosA < 0; // page has crossed to left side
+
+      const x0  = SX + (leftSide ? 0 : SYW);
+      const dir  = leftSide ? -1 : 1;
+      const xFar = x0 + dir * PW;
+      const xMid = x0 + dir * PW * 0.5;
+
+      // Page shape with curved top (bezier)
+      ctx.moveTo(x0,   BY + BH);                             // bottom spine
+      ctx.lineTo(xFar, BY + BH - arcLift * 0.3);            // bottom far
+      ctx.lineTo(xFar, BY + arcLift * 0.4);                  // top far
+      ctx.quadraticCurveTo(xMid, BY - arcLift, x0, BY);     // curved top edge
+      ctx.closePath();
+
+      // Page gradient (lighter in middle to simulate paper)
+      const pg = ctx.createLinearGradient(x0, 0, xFar, 0);
+      if (!leftSide) {
+        pg.addColorStop(0, c.page);
+        pg.addColorStop(0.6, '#2e2214');
+        pg.addColorStop(1, c.page + 'aa');
+      } else {
+        pg.addColorStop(0, c.page + 'aa');
+        pg.addColorStop(0.4, '#2e2214');
+        pg.addColorStop(1, c.page);
+      }
+      ctx.fillStyle   = pg;
+      ctx.fill();
+      ctx.strokeStyle = c.gold + '55';
+      ctx.lineWidth   = 0.8;
+      ctx.stroke();
+
+      // Lines on flipping page
+      if (PW > 8) {
+        for (let i = 0; i < 4; i++) {
+          const ly2 = BY + BH * (0.28 + i * 0.13);
+          const lx1 = x0  + dir * PW * 0.08;
+          const lx2 = xFar - dir * PW * 0.08;
+          const lg = ctx.createLinearGradient(lx1, ly2, lx2, ly2);
+          lg.addColorStop(0,'transparent'); lg.addColorStop(.5,c.gold+'44'); lg.addColorStop(1,'transparent');
+          ctx.strokeStyle=lg; ctx.lineWidth=0.5; ctx.globalAlpha=0.7;
+          ctx.beginPath(); ctx.moveTo(lx1,ly2); ctx.lineTo(lx2,ly2); ctx.stroke();
+          ctx.globalAlpha=1;
+        }
+      }
+    }
+    ctx.restore();
+
+    // ── Spine ──────────────────────────────────────────────────
+    const sg = ctx.createLinearGradient(SX, 0, SX+SYW, 0);
+    sg.addColorStop(0,   c.cover);
+    sg.addColorStop(0.3, c.light);
+    sg.addColorStop(0.7, c.gold);
+    sg.addColorStop(1,   c.cover);
+    ctx.save();
+    ctx.shadowColor=c.gold; ctx.shadowBlur=16;
+    ctx.beginPath();
+    ctx.rect(SX, BY - 2, SYW, BH + 4);
+    ctx.fillStyle=sg; ctx.fill();
+    ctx.restore();
+
+    // ── Glow ───────────────────────────────────────────────────
+    const gg = ctx.createRadialGradient(w/2, BY+BH+4, 0, w/2, BY+BH+4, BW*0.45);
+    gg.addColorStop(0, c.gold+'30'); gg.addColorStop(1,'transparent');
+    ctx.fillStyle=gg; ctx.fillRect(0,0,w,h);
+
+    // ── Sparks ─────────────────────────────────────────────────
+    if (sparkT > 0) {
+      const now = Date.now() * 0.003;
+      const spts = [
+        {x:w*.3, y:BY-8}, {x:w*.5, y:BY-16}, {x:w*.68, y:BY-10},
+        {x:w*.42,y:BY-24}, {x:w*.58,y:BY-20},
+      ];
+      spts.forEach((s,i) => {
+        const a = sparkT * Math.max(0, Math.sin(now + i * 1.3));
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle   = c.light;
+        ctx.shadowColor = c.light; ctx.shadowBlur = 8;
+        ctx.font = '9px serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('✦', s.x, s.y - sparkT * 12 * (0.6 + i * 0.12));
+        ctx.restore();
+      });
+    }
+  }
+
+  // ── Timeline ──────────────────────────────────────────────────
+  const PAGE_N     = 3;
+  const FLIP_MS    = 1100;
+  const HOLD_MS    = 500;
+  const REST_MS    = 2500;
+  const SEG        = FLIP_MS + HOLD_MS;
+  const TOTAL      = PAGE_N * SEG + REST_MS;
+
+  let t0 = performance.now();
+
+  function frame(now:number) {
+    const el = (now - t0) % TOTAL;
+
+    let angle        = 0;
+    let flipped      = 0;
+    let sparkT       = 0;
+    let activeAngle  = Math.PI; // default: page flat left if not in flip
+
+    for (let p = 0; p < PAGE_N; p++) {
+      const seg0 = p * SEG;
+      const seg1 = seg0 + FLIP_MS;
+      const seg2 = seg0 + SEG;
+
+      if (el >= seg0 && el < seg1) {
+        // Currently flipping
+        const t = (el - seg0) / FLIP_MS;
+        activeAngle = ease(t) * Math.PI;
+        flipped     = p;
+        sparkT      = t > 0.8 ? (t - 0.8) / 0.2 : 0;
+      } else if (el >= seg1 && el < seg2) {
+        // Held after flip
+        flipped = p + 1;
+        sparkT  = 1 - (el - seg1) / HOLD_MS;
+      } else if (el >= seg2) {
+        flipped = Math.min(p + 1, PAGE_N);
+      }
+    }
+
+    // Are we in a flip segment?
+    let inFlip = false;
+    for (let p = 0; p < PAGE_N; p++) {
+      const seg0 = p * SEG;
+      if (el >= seg0 && el < seg0 + FLIP_MS) { inFlip = true; angle = activeAngle; flipped = p; break; }
+    }
+    if (!inFlip) angle = Math.PI; // no page mid-air
+
+    // During REST, all pages have flipped
+    if (el >= PAGE_N * SEG) flipped = PAGE_N;
+
+    // Draw
+    draw(inFlip ? angle : Math.PI * 2, flipped, sparkT);
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>

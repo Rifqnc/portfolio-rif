@@ -1,0 +1,372 @@
+---
+import '../styles/global.css';
+import { ja, en } from '../i18n';
+import BookIcon from '../components/BookIcon.astro';
+
+// SS = most legendary (top), C = common (bottom)
+const sections = [
+  { id: 'vtuber',  nameJa: 'VTuberイラスト',    nameEn: 'VTuber Illustrations', rank: 'SS', label: 'LEGENDARY', count: 3, icon: '♛' },
+  { id: 'sdchars', nameJa: 'SDキャラクター',     nameEn: 'SD Characters',        rank: 'S',  label: 'ELITE',     count: 3, icon: '⚜' },
+  { id: 'sdicons', nameJa: 'アイコンイラスト',   nameEn: 'Icon Illustrations',   rank: 'A',  label: 'EXPERT',    count: 3, icon: '⚡' },
+  { id: 'logo',    nameJa: 'ロゴ',               nameEn: 'Logos & Sigils',       rank: 'B',  label: 'RARE',      count: 3, icon: '✦' },
+  { id: 'badge',   nameJa: 'メンバーシップ(各種)',nameEn: 'Membership Badges',    rank: 'C',  label: 'UNCOMMON',  count: 3, icon: '🎖' },
+];
+
+const tierColors: Record<string, string> = {
+  SS: '#c8a040', S: '#b83050', A: '#7850a8', B: '#4878a8', C: '#b09850',
+};
+---
+
+<!doctype html>
+<html lang="ja" data-lang="ja" data-theme="a">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>創造の書 — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Shippori+Mincho:wght@400;700;800&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <script is:inline>
+    // Always theme A; restore language
+    (function() {
+      document.documentElement.dataset.theme = 'a';
+      var l = localStorage.getItem('nb-lang') || 'ja';
+      document.documentElement.dataset.lang = l;
+      document.documentElement.lang = l;
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ══ INTRO SCREEN ══════════════════════════════════════════ -->
+<div id="intro">
+  <canvas id="intro-canvas"></canvas>
+  <div class="intro-corners">
+    <span class="corner tl">✦</span>
+    <span class="corner tr">✦</span>
+    <span class="corner bl">✦</span>
+    <span class="corner br">✦</span>
+  </div>
+  <div class="intro-content">
+    <canvas id="intro-book" width="240" height="160" style="display:block;margin:0 auto 0.5rem;"></canvas>
+    <div class="intro-divider"></div>
+    <h1>
+      <span class="intro-title-ja">創造の書</span>
+      <span class="intro-title-en">The Book of Creation</span>
+    </h1>
+    <p class="intro-sub">イラストレーター · モデラー · 創造者</p>
+    <div class="intro-divider"></div>
+    <button class="intro-enter" id="intro-enter">
+      クリックして入る &nbsp;·&nbsp; Click to Enter
+    </button>
+    <div class="intro-timer"><div class="intro-timer-fill"></div></div>
+  </div>
+</div>
+
+<!-- ══ CANVAS BACKGROUND ══════════════════════════════════════ -->
+<canvas id="bg-canvas"></canvas>
+<div id="scroll-progress"></div>
+
+<!-- ══ NAV ═══════════════════════════════════════════════════ -->
+<nav class="above">
+  <a href="#" class="nav-logo">⚜ GUILD</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#hero"   data-i18n="nav.home">ホーム</a></li>
+    <li><a href="#vtuber" data-i18n="nav.works">作品</a></li>
+    <li><a href="#about"  data-i18n="nav.about">プロフィール</a></li>
+    <li><a href="#contact"data-i18n="nav.contact">お問い合わせ</a></li>
+    <li><button id="lang-toggle">EN</button></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<section class="hero above" id="hero">
+  <div class="scroll-rod"></div>
+  <BookIcon />
+  <h1 class="hero-title" data-i18n="hero.title">創造の書</h1>
+  <p  class="hero-sub"   data-i18n="hero.sub">イラストレーター & モデラー</p>
+  <span class="hero-scroll">↓ &nbsp; scroll &nbsp; ↓</span>
+</section>
+
+<!-- ══ WORKS ══════════════════════════════════════════════════ -->
+<main class="above">
+  {sections.map((sec, idx) => (
+    <div>
+      <!-- Tier Marker -->
+      <div class="tier-marker reveal" data-delay={idx * 0.05}>
+        <div class="tier-line"></div>
+        <div class="tier-badge" style={`color:${tierColors[sec.rank]};border-color:${tierColors[sec.rank]}44`}>
+          {sec.icon} {sec.rank} — {sec.label}
+        </div>
+        <div class="tier-line right"></div>
+      </div>
+
+      <!-- Section -->
+      <section id={sec.id} class="section-wrap">
+        <div class="card reveal" data-delay={idx * 0.05 + 0.1}>
+          <h2 class="section-title" data-name-ja={sec.nameJa} data-name-en={sec.nameEn}>
+            {sec.nameJa}
+          </h2>
+          <div class="works-grid" style="margin-top:1.5rem">
+            {Array.from({ length: sec.count }).map(() => (
+              <div class="work-item">
+                <div class="work-item-placeholder">
+                  <span class="icon">{sec.icon}</span>
+                  <span>Coming Soon</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  ))}
+
+  <!-- ABOUT -->
+  <div>
+    <div class="tier-marker reveal">
+      <div class="tier-line"></div>
+      <div class="tier-badge">✦ PROFILE · プロフィール ✦</div>
+      <div class="tier-line right"></div>
+    </div>
+    <section id="about" class="section-wrap">
+      <div class="card reveal">
+        <h2 class="section-title" data-i18n="about.title">プロフィール</h2>
+        <div class="about-grid" style="margin-top:2rem">
+          <div class="avatar-frame">🎨</div>
+          <div>
+            <p class="about-text" data-i18n="about.body">
+              キャラクターイラスト、VTuberアセット、SDキャラクター、ロゴなど幅広い作品を手がける日本のアーティストです。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CONTACT -->
+  <div>
+    <div class="tier-marker reveal">
+      <div class="tier-line"></div>
+      <div class="tier-badge">✦ CONTACT · お問い合わせ ✦</div>
+      <div class="tier-line right"></div>
+    </div>
+    <section id="contact" class="section-wrap">
+      <div class="card reveal" style="text-align:center;padding:4rem 2rem">
+        <h2 class="section-title" style="margin-bottom:1.5rem" data-i18n="nav.contact">お問い合わせ</h2>
+        <p style="color:var(--text-dim);font-style:italic;margin-bottom:2rem">
+          お仕事のご依頼はこちらから / Commission inquiries welcome
+        </p>
+        <a href="mailto:hello@guild.art" style="
+          display:inline-block;
+          font-family:var(--font-h,var(--font-display-en));
+          font-size:0.75rem;letter-spacing:0.2em;
+          color:var(--accent);border:1px solid var(--border);
+          padding:0.8rem 2.5rem;text-decoration:none;
+          transition:all 0.3s;
+          clip-path:polygon(12px 0%,calc(100% - 12px) 0%,100% 50%,calc(100% - 12px) 100%,12px 100%,0% 50%)
+        " onmouseover="this.style.background='rgba(201,168,76,0.1)'" onmouseout="this.style.background='none'">
+          ✉ Send a Raven
+        </a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<footer class="above">
+  <div class="scroll-rod" style="margin-bottom:2rem"></div>
+  <div class="crest">⚜</div>
+  <p data-i18n="footer.copy">© 2026 All rights reserved.</p>
+</footer>
+
+
+
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════ -->
+<script>
+  import '../scripts/canvas-bg.ts';
+  import { ja, en, type Lang, type T } from '../i18n.ts';
+
+  // ─ Intro ─────────────────────────────────────────────────
+  const intro = document.getElementById('intro')!;
+  const introCanvas = document.getElementById('intro-canvas') as HTMLCanvasElement;
+  const ic = introCanvas.getContext('2d')!;
+
+  if (sessionStorage.getItem('intro-done')) {
+    intro.classList.add('gone');
+  } else {
+    // Intro canvas particles
+    function resizeIC() { introCanvas.width = window.innerWidth; introCanvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeIC); resizeIC();
+    const pts = Array.from({ length: 130 }, () => ({
+      x: Math.random(), y: Math.random(),
+      vx: (Math.random() - 0.5) * 0.0002, vy: (Math.random() - 0.5) * 0.0002,
+      r: Math.random() * 2 + 0.4, gold: Math.random() > 0.65,
+    }));
+    let it = 0;
+    function introFrame() {
+      if (intro.classList.contains('gone')) return;
+      it += 0.01;
+      const W = introCanvas.width, H = introCanvas.height;
+      ic.clearRect(0, 0, W, H);
+      const bg = ic.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.75);
+      bg.addColorStop(0, '#0d0a1e'); bg.addColorStop(1, '#01020a');
+      ic.fillStyle = bg; ic.fillRect(0, 0, W, H);
+      // bg image overlay
+      const ibg = (window as any).__introBg;
+      if (ibg?.complete) { ic.globalAlpha = 0.18; ic.drawImage(ibg, 0, 0, W, H); ic.globalAlpha = 1; }
+      pts.forEach(p => {
+        p.x = ((p.x + p.vx) + 1) % 1; p.y = ((p.y + p.vy) + 1) % 1;
+        const a = Math.max(0, 0.25 + Math.sin(it * 2 + p.x * 12) * 0.45);
+        ic.beginPath(); ic.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+        ic.fillStyle = p.gold ? `rgba(201,168,76,${a})` : `rgba(200,195,240,${a * 0.5})`;
+        ic.fill();
+      });
+      requestAnimationFrame(introFrame);
+    }
+    introFrame();
+    const iimg = new Image(); iimg.src = '/assets/bg/intro-bg.png'; (window as any).__introBg = iimg;
+
+    // ── Intro book canvas ──────────────────────────────────
+    const ibc = document.getElementById('intro-book') as HTMLCanvasElement;
+    const ibCtx = ibc.getContext('2d')!;
+    const IW = ibc.width, IH = ibc.height;
+    const GOLD = '#c9a84c', GOLDL = '#f0d890';
+
+    function drawIntroBook(angle: number) {
+      ibCtx.clearRect(0, 0, IW, IH);
+      const BW = IW * 0.82, BH = IH * 0.62;
+      const BX = (IW - BW) / 2, BY = IH * 0.17;
+      const SYW = BW * 0.04, SX = BX + BW/2 - SYW/2;
+      const CVW = (BW - SYW) / 2;
+      const DEPTH = IH * 0.07;
+      function crn(x:number,y:number,dx:number,dy:number) {
+        const co=10; ibCtx.beginPath();
+        ibCtx.moveTo(x,y+dy*co); ibCtx.lineTo(x,y); ibCtx.lineTo(x+dx*co,y);
+        ibCtx.strokeStyle=GOLD+'cc'; ibCtx.lineWidth=1.2; ibCtx.stroke();
+      }
+      // Depth edge
+      ibCtx.fillStyle=GOLD+'33';
+      ibCtx.fillRect(BX, BY+BH, CVW, DEPTH*0.7);
+      ibCtx.fillRect(SX+SYW, BY+BH, CVW, DEPTH*0.7);
+      // Left cover
+      ibCtx.beginPath(); ibCtx.roundRect(BX,BY,CVW,BH,[4,0,0,4]);
+      ibCtx.fillStyle='#1a1008'; ibCtx.fill();
+      ibCtx.strokeStyle=GOLD; ibCtx.lineWidth=1.5; ibCtx.stroke();
+      crn(BX+8,BY+8,1,1); crn(BX+8,BY+BH-8,1,-1);
+      crn(BX+CVW-8,BY+8,-1,1); crn(BX+CVW-8,BY+BH-8,-1,-1);
+      ibCtx.save(); ibCtx.shadowColor=GOLD; ibCtx.shadowBlur=12;
+      ibCtx.fillStyle=GOLD; ibCtx.font=`${BH*.28}px serif`;
+      ibCtx.textAlign='center'; ibCtx.textBaseline='middle';
+      ibCtx.fillText('⚜', BX+CVW*.5, BY+BH*.48); ibCtx.restore();
+      // Right cover
+      const RX=SX+SYW;
+      ibCtx.beginPath(); ibCtx.roundRect(RX,BY,CVW,BH,[0,4,4,0]);
+      ibCtx.fillStyle='#1a1008'; ibCtx.fill();
+      ibCtx.strokeStyle=GOLD; ibCtx.lineWidth=1.5; ibCtx.stroke();
+      crn(RX+8,BY+8,1,1); crn(RX+8,BY+BH-8,1,-1);
+      crn(RX+CVW-8,BY+8,-1,1); crn(RX+CVW-8,BY+BH-8,-1,-1);
+      // Page
+      const cosA=Math.cos(angle), sinA=Math.sin(angle);
+      const arcLift=sinA*BH*0.22;
+      if (Math.abs(angle)<Math.PI+0.01) {
+        const PW=CVW*0.88*Math.abs(cosA);
+        const left=cosA<0, x0=SX+(left?0:SYW), dir=left?-1:1, xFar=x0+dir*PW;
+        ibCtx.beginPath();
+        ibCtx.moveTo(x0,BY+BH); ibCtx.lineTo(xFar,BY+BH-arcLift*.3);
+        ibCtx.lineTo(xFar,BY+arcLift*.4);
+        ibCtx.quadraticCurveTo(x0+dir*PW*.5,BY-arcLift,x0,BY);
+        ibCtx.closePath();
+        const pg=ibCtx.createLinearGradient(x0,0,xFar,0);
+        pg.addColorStop(0,'#261a08'); pg.addColorStop(0.5,'#3a2810'); pg.addColorStop(1,'#261a08');
+        ibCtx.fillStyle=pg; ibCtx.fill();
+        ibCtx.strokeStyle=GOLD+'44'; ibCtx.lineWidth=0.8; ibCtx.stroke();
+      }
+      // Spine
+      ibCtx.save(); ibCtx.shadowColor=GOLD; ibCtx.shadowBlur=14;
+      const sg=ibCtx.createLinearGradient(SX,0,SX+SYW,0);
+      sg.addColorStop(0,'#8b6010'); sg.addColorStop(.35,GOLDL); sg.addColorStop(.65,GOLD); sg.addColorStop(1,'#8b6010');
+      ibCtx.fillStyle=sg; ibCtx.fillRect(SX,BY-2,SYW,BH+4); ibCtx.restore();
+      // Glow
+      const gg=ibCtx.createRadialGradient(IW/2,BY+BH,0,IW/2,BY+BH,BW*.4);
+      gg.addColorStop(0,GOLD+'33'); gg.addColorStop(1,'transparent');
+      ibCtx.fillStyle=gg; ibCtx.fillRect(0,0,IW,IH);
+    }
+
+    // Animate intro book
+    const IBK_TOTAL = 5500;
+    const IBK_FLIP  = 1100;
+    let ibStart = performance.now();
+    function introBookFrame(now: number) {
+      if (intro.classList.contains('gone')) return;
+      const el = (now - ibStart) % IBK_TOTAL;
+      let angle = Math.PI * 2; // no page mid-air
+      for (let p = 0; p < 3; p++) {
+        const s0 = p * 1600, s1 = s0 + IBK_FLIP;
+        if (el >= s0 && el < s1) {
+          angle = ((el-s0)/IBK_FLIP) * Math.PI;
+          break;
+        }
+      }
+      drawIntroBook(angle > Math.PI ? Math.PI : angle);
+      requestAnimationFrame(introBookFrame);
+    }
+    requestAnimationFrame(introBookFrame);
+
+    function dismissIntro() {
+      intro.classList.add('fade-out');
+      setTimeout(() => intro.classList.add('gone'), 1200);
+      sessionStorage.setItem('intro-done', '1');
+    }
+    document.getElementById('intro-enter')!.addEventListener('click', dismissIntro);
+    intro.addEventListener('click', (e) => { if ((e.target as HTMLElement).id !== 'intro-enter') dismissIntro(); });
+    setTimeout(dismissIntro, 9500);
+  }
+
+  // ─ i18n ───────────────────────────────────────────────────
+  const html = document.documentElement;
+  const dictMap: Record<string, T> = { ja, en };
+  function get(obj: any, key: string): string {
+    return key.split('.').reduce((o, k) => o?.[k], obj) ?? '';
+  }
+  function applyLang(lang: Lang) {
+    const t = dictMap[lang];
+    html.lang = lang; html.dataset.lang = lang;
+    localStorage.setItem('nb-lang', lang);
+    // Standard i18n keys
+    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+      const val = get(t, el.dataset.i18n!);
+      if (val) el.textContent = val;
+    });
+    // Section titles (ja/en via data attributes)
+    document.querySelectorAll<HTMLElement>('[data-name-ja]').forEach(el => {
+      el.textContent = lang === 'ja' ? (el.dataset.nameJa || '') : (el.dataset.nameEn || '');
+    });
+    const lt = document.getElementById('lang-toggle')!;
+    lt.textContent = lang === 'ja' ? 'EN' : 'JP';
+  }
+  applyLang((localStorage.getItem('nb-lang') as Lang) || 'ja');
+  document.getElementById('lang-toggle')!.addEventListener('click', () => {
+    applyLang(html.dataset.lang === 'ja' ? 'en' : 'ja');
+  });
+
+  // ─ Scroll progress ────────────────────────────────────────
+  const prog = document.getElementById('scroll-progress')!;
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    prog.style.transform = `scaleX(${pct})`;
+  });
+
+  // ─ Reveal on scroll ───────────────────────────────────────
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const delay = Number((e.target as HTMLElement).dataset.delay || 0);
+        setTimeout(() => e.target.classList.add('visible'), delay * 1000);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
