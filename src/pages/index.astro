@@ -68,7 +68,7 @@ const tierColors: Record<string, string> = {
 <div id="scroll-progress"></div>
 
 <!-- ══ NAV ═══════════════════════════════════════════════════ -->
-<nav class="above">
+<nav class="above" id="main-nav">
   <a href="#" class="nav-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M19.5 2C20 5 20.5 10 17.5 15C16 17.5 13.5 19.5 11 21L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z"/><path d="M19.5 2C17.5 5 15.5 8.5 13.5 11.5C11.5 14.5 10 17.5 9 20L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z" opacity="0.35"/><path d="M8.5 23L6.5 22.5L9 21.5Z"/></svg> GUILD</a>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu">
     <span></span><span></span><span></span>
@@ -78,9 +78,11 @@ const tierColors: Record<string, string> = {
     <li><a href="#vtuber" data-i18n="nav.works">作品</a></li>
     <li><a href="#about"  data-i18n="nav.about">プロフィール</a></li>
     <li><a href="#contact"data-i18n="nav.contact">お問い合わせ</a></li>
-    <li><button id="lang-toggle">EN</button></li>
   </ul>
 </nav>
+
+<!-- ══ FLOATING LANG BUTTON ══════════════════════════════════ -->
+<button id="lang-toggle" class="lang-float above" aria-label="Switch language">EN</button>
 
 <!-- ══ HERO ══════════════════════════════════════════════════ -->
 <section class="hero above" id="hero">
@@ -400,18 +402,20 @@ const tierColors: Record<string, string> = {
 
   // ─ Mobile hamburger ───────────────────────────────────────
   const hamburger = document.getElementById('nav-hamburger')!;
-  const navLinks  = document.getElementById('nav-links')!;
+  const mainNav   = document.getElementById('main-nav')!;
+  function closeMenu() {
+    hamburger.classList.remove('open');
+    mainNav.classList.remove('menu-open');
+    document.body.style.overflow = '';
+  }
   hamburger.addEventListener('click', () => {
+    const opening = !mainNav.classList.contains('menu-open');
     hamburger.classList.toggle('open');
-    navLinks.classList.toggle('open');
-    document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
+    mainNav.classList.toggle('menu-open');
+    document.body.style.overflow = opening ? 'hidden' : '';
   });
-  navLinks.querySelectorAll('a, button').forEach(el => {
-    el.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      navLinks.classList.remove('open');
-      document.body.style.overflow = '';
-    });
+  document.getElementById('nav-links')!.querySelectorAll('a').forEach(el => {
+    el.addEventListener('click', closeMenu);
   });
 </script>
 </body>
