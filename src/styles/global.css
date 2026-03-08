@@ -351,6 +351,14 @@ nav {
   animation: introReveal 1.5s ease 0.8s forwards;
 }
 @keyframes introReveal { to { opacity: 1; } }
+#intro-book {
+  animation: bookFloat 3s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes bookFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-9px); }
+}
 .intro-seal {
   font-size: clamp(4rem, 10vw, 7rem);
   color: #c9a84c;
@@ -701,7 +709,7 @@ footer .crest { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.75rem;
   /* Intro */
   .intro-content { padding: 1.25rem; }
   .intro-sub { font-size: 0.95rem; }
-  #intro-book { max-width: 85vw; height: auto; }
+  #intro-book { max-width: 85vw; height: auto; animation: none; }
 
   /* Footer */
   footer { padding: 2rem 1rem; }

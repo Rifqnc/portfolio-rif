@@ -327,20 +327,28 @@ const tierColors: Record<string, string> = {
 
     // Animate intro book
     const IBK_TOTAL = 5500;
-    const IBK_FLIP  = 1100;
+    const IBK_FLIP  = 1200;
     let ibStart = performance.now();
+    // ease-in-out cubic
+    function eio(t: number) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
     function introBookFrame(now: number) {
       if (intro.classList.contains('gone')) return;
       const el = (now - ibStart) % IBK_TOTAL;
       let angle = Math.PI * 2; // no page mid-air
+      let pageAlpha = 1;
       for (let p = 0; p < 3; p++) {
-        const s0 = p * 1600, s1 = s0 + IBK_FLIP;
+        const s0 = p * 1650, s1 = s0 + IBK_FLIP;
         if (el >= s0 && el < s1) {
-          angle = ((el-s0)/IBK_FLIP) * Math.PI;
+          const t = (el - s0) / IBK_FLIP;
+          angle = eio(t) * Math.PI;
+          // fade page in/out at edges of flip so there's no pop
+          pageAlpha = t < 0.08 ? t / 0.08 : t > 0.92 ? (1 - t) / 0.08 : 1;
           break;
         }
       }
+      ibCtx.globalAlpha = pageAlpha;
       drawIntroBook(angle > Math.PI ? Math.PI : angle);
+      ibCtx.globalAlpha = 1;
       requestAnimationFrame(introBookFrame);
     }
     requestAnimationFrame(introBookFrame);
