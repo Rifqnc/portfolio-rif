@@ -325,29 +325,19 @@ const tierColors: Record<string, string> = {
       ibCtx.fillStyle=gg; ibCtx.fillRect(0,0,IW,IH);
     }
 
-    // Animate intro book
-    const IBK_TOTAL = 5500;
-    const IBK_FLIP  = 1200;
+    // Animate intro book — continuous seamless loop, no pauses
+    const IBK_CYCLE = 2200; // one full flip every 2.2s
     let ibStart = performance.now();
-    // ease-in-out cubic
-    function eio(t: number) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    // ease-in-out sine — smoother than cubic at the wrap point
+    function eio(t: number) { return (1 - Math.cos(t * Math.PI)) / 2; }
     function introBookFrame(now: number) {
       if (intro.classList.contains('gone')) return;
-      const el = (now - ibStart) % IBK_TOTAL;
-      let angle = Math.PI * 2; // no page mid-air
-      let pageAlpha = 1;
-      for (let p = 0; p < 3; p++) {
-        const s0 = p * 1650, s1 = s0 + IBK_FLIP;
-        if (el >= s0 && el < s1) {
-          const t = (el - s0) / IBK_FLIP;
-          angle = eio(t) * Math.PI;
-          // fade page in/out at edges of flip so there's no pop
-          pageAlpha = t < 0.08 ? t / 0.08 : t > 0.92 ? (1 - t) / 0.08 : 1;
-          break;
-        }
-      }
-      ibCtx.globalAlpha = pageAlpha;
-      drawIntroBook(angle > Math.PI ? Math.PI : angle);
+      const t = ((now - ibStart) % IBK_CYCLE) / IBK_CYCLE; // 0..1 forever
+      const angle = eio(t) * Math.PI; // 0 → π seamlessly
+      // Gentle fade at seam so the reset is invisible
+      const alpha = t > 0.92 ? (1 - t) / 0.08 : t < 0.06 ? t / 0.06 : 1;
+      ibCtx.globalAlpha = Math.max(alpha, 0);
+      drawIntroBook(angle);
       ibCtx.globalAlpha = 1;
       requestAnimationFrame(introBookFrame);
     }
@@ -390,12 +380,19 @@ const tierColors: Record<string, string> = {
     applyLang(html.dataset.lang === 'ja' ? 'en' : 'ja');
   });
 
-  // ─ Scroll progress ────────────────────────────────────────
+  // ─ Scroll progress (passive + rAF throttled) ──────────────
   const prog = document.getElementById('scroll-progress')!;
+  let scrollTicking = false;
   window.addEventListener('scroll', () => {
-    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-    prog.style.transform = `scaleX(${pct})`;
-  });
+    if (!scrollTicking) {
+      requestAnimationFrame(() => {
+        const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        prog.style.transform = `scaleX(${Math.min(pct, 1)})`;
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
+  }, { passive: true });
 
   // ─ Reveal on scroll ───────────────────────────────────────
   const obs = new IntersectionObserver(entries => {
