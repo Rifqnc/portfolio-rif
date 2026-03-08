@@ -129,14 +129,32 @@
     corner(BX+CVW-9,BY+9,   -1,  1);
     corner(BX+CVW-9,BY+BH-9,-1, -1);
 
-    // ⚜ seal on left cover
-    ctx.save();
-    ctx.shadowColor = c.gold; ctx.shadowBlur = 14;
-    ctx.fillStyle   = c.gold;
-    ctx.font        = `${BH * 0.30}px serif`;
-    ctx.textAlign   = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('⚜', BX + CVW * 0.5, BY + BH * 0.48);
-    ctx.restore();
+    // Quill pen seal on left cover
+    (function drawQuill(c2d: CanvasRenderingContext2D, cx: number, cy: number, sz: number, col: string) {
+      c2d.save();
+      c2d.translate(cx, cy);
+      c2d.rotate(0.3);
+      const h = sz, w = h * 0.38;
+      c2d.shadowColor = col; c2d.shadowBlur = 14;
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78);
+      c2d.bezierCurveTo(w*0.9, -h*0.55, w, -h*0.1, 0, h*0.62);
+      c2d.bezierCurveTo(w*0.25, h*0.1, w*0.3, -h*0.4, 0, -h*0.78);
+      c2d.fillStyle = col; c2d.globalAlpha = 0.9; c2d.fill();
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78);
+      c2d.bezierCurveTo(-w*0.6, -h*0.5, -w*0.55, -h*0.05, 0, h*0.62);
+      c2d.bezierCurveTo(-w*0.18, h*0.1, -w*0.2, -h*0.38, 0, -h*0.78);
+      c2d.fillStyle = col; c2d.globalAlpha = 0.45; c2d.fill();
+      c2d.globalAlpha = 1;
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78); c2d.lineTo(0, h*0.62);
+      c2d.strokeStyle = col; c2d.lineWidth = h*0.045; c2d.lineCap = 'round'; c2d.stroke();
+      c2d.beginPath();
+      c2d.moveTo(0, h*0.62); c2d.lineTo(-h*0.09, h*0.78); c2d.lineTo(h*0.07, h*0.68);
+      c2d.closePath(); c2d.fillStyle = col; c2d.fill();
+      c2d.restore();
+    })(ctx, BX + CVW * 0.5, BY + BH * 0.48, BH * 0.30, c.gold);
 
     // ── Right cover ────────────────────────────────────────────
     ctx.beginPath();

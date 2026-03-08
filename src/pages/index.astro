@@ -6,7 +6,7 @@ import BookIcon from '../components/BookIcon.astro';
 // SS = most legendary (top), C = common (bottom)
 const sections = [
   { id: 'vtuber',  nameJa: 'VTuberイラスト',    nameEn: 'VTuber Illustrations', rank: 'SS', label: 'LEGENDARY', count: 3, icon: '♛' },
-  { id: 'sdchars', nameJa: 'SDキャラクター',     nameEn: 'SD Characters',        rank: 'S',  label: 'ELITE',     count: 3, icon: '⚜' },
+  { id: 'sdchars', nameJa: 'SDキャラクター',     nameEn: 'SD Characters',        rank: 'S',  label: 'ELITE',     count: 3, icon: '🪶' },
   { id: 'sdicons', nameJa: 'アイコンイラスト',   nameEn: 'Icon Illustrations',   rank: 'A',  label: 'EXPERT',    count: 3, icon: '⚡' },
   { id: 'logo',    nameJa: 'ロゴ',               nameEn: 'Logos & Sigils',       rank: 'B',  label: 'RARE',      count: 3, icon: '✦' },
   { id: 'badge',   nameJa: 'メンバーシップ(各種)',nameEn: 'Membership Badges',    rank: 'C',  label: 'UNCOMMON',  count: 3, icon: '🎖' },
@@ -69,7 +69,7 @@ const tierColors: Record<string, string> = {
 
 <!-- ══ NAV ═══════════════════════════════════════════════════ -->
 <nav class="above">
-  <a href="#" class="nav-logo">⚜ GUILD</a>
+  <a href="#" class="nav-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15" style="vertical-align:-2px;margin-right:0.3em"><path d="M19.5 2C20 5 20.5 10 17.5 15C16 17.5 13.5 19.5 11 21L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z"/><path d="M19.5 2C17.5 5 15.5 8.5 13.5 11.5C11.5 14.5 10 17.5 9 20L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z" opacity="0.35"/><path d="M8.5 23L6.5 22.5L9 21.5Z"/></svg> GUILD</a>
   <ul class="nav-links" id="nav-links">
     <li><a href="#hero"   data-i18n="nav.home">ホーム</a></li>
     <li><a href="#vtuber" data-i18n="nav.works">作品</a></li>
@@ -176,7 +176,7 @@ const tierColors: Record<string, string> = {
 <!-- ══ FOOTER ════════════════════════════════════════════════ -->
 <footer class="above">
   <div class="scroll-rod" style="margin-bottom:2rem"></div>
-  <div class="crest">⚜</div>
+  <div class="crest"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M19.5 2C20 5 20.5 10 17.5 15C16 17.5 13.5 19.5 11 21L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z"/><path d="M19.5 2C17.5 5 15.5 8.5 13.5 11.5C11.5 14.5 10 17.5 9 20L8.5 23L9.5 20C11 16.5 13.5 13 16 9.5C17.5 7 19.5 4.5 19.5 2Z" opacity="0.35"/><path d="M8.5 23L6.5 22.5L9 21.5Z"/></svg></div>
   <p data-i18n="footer.copy">© 2026 All rights reserved.</p>
 </footer>
 
@@ -233,6 +233,36 @@ const tierColors: Record<string, string> = {
     const IW = ibc.width, IH = ibc.height;
     const GOLD = '#c9a84c', GOLDL = '#f0d890';
 
+    function drawQuillOnCanvas(c2d: CanvasRenderingContext2D, cx: number, cy: number, sz: number, col: string) {
+      c2d.save();
+      c2d.translate(cx, cy);
+      c2d.rotate(0.3);
+      const h = sz, w = h * 0.38;
+      c2d.shadowColor = col; c2d.shadowBlur = 12;
+      // Right vane
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78);
+      c2d.bezierCurveTo(w*0.9, -h*0.55, w, -h*0.1, 0, h*0.62);
+      c2d.bezierCurveTo(w*0.25, h*0.1, w*0.3, -h*0.4, 0, -h*0.78);
+      c2d.fillStyle = col; c2d.globalAlpha = 0.9; c2d.fill();
+      // Left vane
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78);
+      c2d.bezierCurveTo(-w*0.6, -h*0.5, -w*0.55, -h*0.05, 0, h*0.62);
+      c2d.bezierCurveTo(-w*0.18, h*0.1, -w*0.2, -h*0.38, 0, -h*0.78);
+      c2d.fillStyle = col; c2d.globalAlpha = 0.45; c2d.fill();
+      c2d.globalAlpha = 1;
+      // Rachis
+      c2d.beginPath();
+      c2d.moveTo(0, -h*0.78); c2d.lineTo(0, h*0.62);
+      c2d.strokeStyle = col; c2d.lineWidth = h*0.045; c2d.lineCap = 'round'; c2d.stroke();
+      // Nib
+      c2d.beginPath();
+      c2d.moveTo(0, h*0.62); c2d.lineTo(-h*0.09, h*0.78); c2d.lineTo(h*0.07, h*0.68);
+      c2d.closePath(); c2d.fillStyle = col; c2d.fill();
+      c2d.restore();
+    }
+
     function drawIntroBook(angle: number) {
       ibCtx.clearRect(0, 0, IW, IH);
       const BW = IW * 0.82, BH = IH * 0.62;
@@ -255,10 +285,7 @@ const tierColors: Record<string, string> = {
       ibCtx.strokeStyle=GOLD; ibCtx.lineWidth=1.5; ibCtx.stroke();
       crn(BX+8,BY+8,1,1); crn(BX+8,BY+BH-8,1,-1);
       crn(BX+CVW-8,BY+8,-1,1); crn(BX+CVW-8,BY+BH-8,-1,-1);
-      ibCtx.save(); ibCtx.shadowColor=GOLD; ibCtx.shadowBlur=12;
-      ibCtx.fillStyle=GOLD; ibCtx.font=`${BH*.28}px serif`;
-      ibCtx.textAlign='center'; ibCtx.textBaseline='middle';
-      ibCtx.fillText('⚜', BX+CVW*.5, BY+BH*.48); ibCtx.restore();
+      drawQuillOnCanvas(ibCtx, BX+CVW*.5, BY+BH*.48, BH*.28, GOLD);
       // Right cover
       const RX=SX+SYW;
       ibCtx.beginPath(); ibCtx.roundRect(RX,BY,CVW,BH,[0,4,4,0]);
